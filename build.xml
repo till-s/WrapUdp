@@ -1,0 +1,84 @@
+<project name="wrudp" default="dist" basedir=".">
+	<property name="src" value="wrudp"/>
+	<property name="bld" value="build"/>
+	<property name="dst" value="dist"/>
+	<property name="sdt" value="srcdist"/>
+
+	<path id="classpath">
+		<pathelement location="${bld}"/>
+	</path>
+
+	<target name="init">
+		<tstamp/>
+		<mkdir dir="${bld}"/>
+	</target>
+
+	<target name="compile" depends="init" description="compile">
+		<property name="blax" refid="classpath"/>
+		<echo   message="My classpath ${blax}"/>
+		<javac includeantruntime="false"
+		       srcdir="${src}" destdir="${bld}"
+		       excludes="${java.preV6.exclude}"
+		       debug="true" debuglevel="lines,source">
+		<classpath refid="classpath"/> 
+		<compilerarg value="-Xlint:unchecked"/>
+		</javac>
+	</target>
+
+	<target name="copyresources" depends="compile">
+		<copy todir="${bld}/${src}">
+			<fileset dir="." file="JCALibrary.properties"/>
+		</copy>
+	</target>
+
+	<target name="dist" depends="copyresources" description="jar it up">
+		<mkdir dir="${dst}"/>
+		<jar jarfile="${dst}/wrudp.jar">
+			<fileset dir="${bld}" />
+			<manifest>
+				<attribute name="Main-Class" value="wrudp.UdpProxy"/>
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="srcdist" depends="dist" description="jar everything">
+		<mkdir dir="${sdt}"/>
+		<jar jarfile="${sdt}/${git_version_string}-source.jar">
+			<fileset dir="." includes="${src}/**" excludes="**/.*.swp"/>
+			<fileset dir="." includes="${bld}/**"/>
+		</jar>
+	</target>
+
+	<target name="clean" >
+		<delete dir="${bld}"/>
+		<delete dir="${dst}"/>
+		<delete dir="${sdt}"/>
+	</target>
+
+	<target name="havegit">
+		<available file=".git" property="git.present"/>
+		<condition property="versjava.needed">
+			<or>
+				<isset property="git.present"/>
+				<not>
+					<available file="${src}/CaxyVers.java"/>
+				</not>
+			</or>
+		</condition>
+		<echo message="versjava.needed: ${versjava.needed}, git.present: ${git.present}"/>
+	</target>
+
+	<target name="gitvers" depends="havegit" if="git.present">
+		<echo message="git describe --always"/>
+		<exec executable="git" logError="true" outputproperty="git_version_string">
+			<arg value="describe"/>
+			<arg value="--always"/>
+		</exec>
+		<echo message="VERSION IS: ${git_version_string}"/>
+	</target>
+
+	<target name="jvers">
+		<echo message="JDK Version ${ant.java.version}"/>
+	</target>
+
+</project>
