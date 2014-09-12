@@ -121,7 +121,12 @@ class UdpProxy implements Runnable {
 		this.addr = daddr; this.port = dport;
 		try {
 			udpChnl = DatagramChannel.open();
-			udpChnl.socket().bind( my_addr );
+			try {
+				udpChnl.socket().bind( my_addr );
+			} catch (IOException e) {
+				System.err.println("Unable to bind to " + my_addr);
+				throw e;
+			}
 			udpChnl.socket().setReuseAddress( true );
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -216,6 +221,22 @@ class UdpProxy implements Runnable {
 		System.err.println("      'wrudp.dstport'  - port to connect to (on the inside)");
 		System.err.println("      'wrudp.lclport'  - port where to listen (on the outside)");
 		System.err.println("                         if undefined 'wrudp.dstport' is used.");
+		System.err.println();
+		System.err.println("    Command line options:");
+		System.err.println("      -H <host>        - host to connect to (on the inside);");
+		System.err.println("                         overrides 'wrupdp.dstaddr' property.");
+		System.err.println("      -P <port>        - port to connect to (on the inside);");
+		System.err.println("                         overrides 'wrupdp.dstport' property.");
+		System.err.println("      -L <port>        - port where to listen (on the outside);");
+		System.err.println("                         overrides 'wrupdp.lclport' property.");
+		System.err.println("      -h               - this message.");
+		System.err.println("      -d               - enable debugging messages.");
+		System.err.println("      -R               - maintain only a single proxy on the 'inside'");
+		System.err.println("                         and use its local port for all 'outside' connections.");
+		System.err.println("                         E.g., repeated 'nc' sessions on the 'outside' talking");
+		System.err.println("                         to the same 'nc' on the inside (via udp) needs this");
+		System.err.println("                         because the 'server nc' remembers the source port and");
+		System.err.println("                         refuses to respond to any changes of source.");
 	}
 
 	/* RETURNS: if 'hasArg' then 'arg' is returned if 'opt' matches 'arg'.
@@ -284,14 +305,18 @@ class UdpProxy implements Runnable {
 			if ( null != (oa = chkopt(os, opt, "-L", true)) ) {
 				lcl_port_s = oa;
 			} else {
+				nopts--; /* 'opt' now points to a non-option */
 				break;
 			}
-			nopts++;
 		}
+
+		nopts += opt.getpos();
 
 		ncmd  = args.length - nopts;
 
-		System.err.println("Commands: " + ncmd + " nopts: " +nopts);
+		if ( debug > 0 ) {
+			System.err.println("Commands: " + ncmd + " nopts: " +nopts);
+		}
 
 		if ( (ncmd = args.length - nopts) > 0 ) {
 
@@ -352,6 +377,7 @@ class UdpProxy implements Runnable {
 			/* inside version  */
 			ostrm = new OStream();
 			istrm = new IStream();
+			System.err.println("UDP Tunnel is up");
 		}
 
 		istrm.run();
