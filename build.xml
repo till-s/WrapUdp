@@ -27,7 +27,7 @@
 
 	<target name="copyresources" depends="compile">
 		<copy todir="${bld}/${src}">
-			<fileset dir="." file="JCALibrary.properties"/>
+			<fileset file="JCALibrary.properties"/>
 		</copy>
 	</target>
 
