@@ -1,4 +1,4 @@
-# WrapUdp - Tunnel simple UDP protocols via SSH.
+# WrapUdp - Tunnel Simple UDP Protocols via SSH.
 
 `WrapUdp` is a small java application designed to wrap UDP datagrams so that they
 can be shipped over TCP and therefore use any `ssh` tunnel.

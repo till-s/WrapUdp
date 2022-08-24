@@ -228,6 +228,9 @@ class UdpProxy implements Runnable {
 		System.err.println();
 		System.err.println("            java -jar wrudp.jar -- ssh usr@outsidehost java -jar wrudp.jar -H <host> -P <port>");
 		System.err.println();
+		System.err.println("          keep in mind that '-H/-P/-L' are *always* given to the *outside* instance even");
+		System.err.println("          though '-H/-P' define the destination on the *inside*!");
+		System.err.println();
 		System.err.println("    Command line options:");
 		System.err.println("      -H <host>        - host to connect to (on the inside);");
 		System.err.println("                         overrides 'wrupdp.dstaddr' property.");
